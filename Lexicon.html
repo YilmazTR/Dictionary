@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lexicon — A dictionary that grows with you</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+:root{--paper:#f6f5ef;--white:#fff;--ink:#25352e;--muted:#758078;--line:#dce1d8;--green:#326849;--lime:#d9edb2;--serif:'Manrope',sans-serif;--body:'DM Sans',sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body)}button,input,select,textarea{font:inherit}button,a{ -webkit-tap-highlight-color:transparent}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #a1bf65;outline-offset:4px}button{transition:background .2s,transform .2s}button:active{transform:scale(.97)}a{color:inherit} .app{display:grid;grid-template-columns:238px 1fr;min-height:100vh}
+aside{padding:32px 22px;background:#eef0e8;border-right:1px solid var(--line);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.brand{font:800 26px var(--serif);letter-spacing:-1px;display:flex;align-items:center;gap:10px}.logo{width:33px;height:33px;background:var(--green);color:white;border-radius:9px;display:grid;place-items:center;font-size:23px}.brand small{font-size:10px;color:var(--green);letter-spacing:1px;margin-left:3px}
+.aside-label{font-size:10px;letter-spacing:1.8px;color:var(--muted);margin:48px 12px 13px;font-weight:700}
+nav{display:grid;gap:7px}nav button{background:transparent;border:0;text-align:left;padding:13px 14px;border-radius:7px;color:#657166;display:flex;gap:12px;align-items:center}nav button.active{background:#dce7d2;color:var(--green);font-weight:700}nav button:hover{background:#e0e6da}.count{margin-left:auto;background:var(--green);color:white;border-radius:5px;padding:2px 7px;font-size:11px}
+.local{margin-top:auto;font-size:12px;color:var(--muted);line-height:1.8;border-top:1px solid var(--line);padding-top:20px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#679d61;margin-right:7px}
+main{max-width:1370px;width:100%;padding:0 48px 35px;margin:auto}.topbar{height:91px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted)}.breadcrumb{display:flex;gap:13px;align-items:center}.top-actions{display:flex;gap:14px;align-items:center}.quiet{background:none;border:0;color:var(--muted);font-size:12px;padding:8px}.avatar{background:#e0e7d5;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:var(--green)}
+.hero{padding:42px 0 30px;display:flex;justify-content:space-between;align-items:center;gap:25px}.eyebrow{font-size:10px;letter-spacing:2px;font-weight:700;color:var(--green);text-transform:uppercase;margin-bottom:12px}h1{font:700 clamp(28px,3.3vw,43px)/1.2 var(--serif);letter-spacing:-1.8px;margin:0 0 12px}h2{font:700 20px var(--serif);letter-spacing:-.6px;margin:0}p{color:var(--muted);line-height:1.7;margin:0;font-size:14px}.primary{background:var(--green);color:white;padding:13px 20px;border:1px solid var(--green);border-radius:7px;font-weight:600;font-size:13px;white-space:nowrap}.primary:hover{background:#244d36;transform:translateY(-2px)}.secondary{background:transparent;color:var(--green);border:1px solid #bfcdbc;border-radius:7px;padding:11px 17px;font-size:12px;font-weight:600}.secondary:hover{background:#e9eee0}
+.overview{display:grid;grid-template-columns:1.65fr 1fr;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;margin:4px 0 35px}.review-panel{background:#e6eddc;padding:29px 30px;position:relative;overflow:hidden}.review-content{position:relative;z-index:1;max-width:320px}.review-panel h2{font-size:26px;margin:8px 0 9px}.review-panel p{font-size:13px;color:#64745d;margin-bottom:22px}.pill{font-size:10px;background:#d3dfc3;border-radius:4px;padding:5px 9px;display:inline-block;color:#557148}.orb{position:absolute;width:190px;height:190px;border:1px solid #c1d1af;border-radius:50%;right:-15px;top:42px}.orb:before,.orb:after{content:"";position:absolute;border:1px solid #c1d1af;border-radius:50%;inset:20px}.orb:after{inset:42px;background:linear-gradient(135deg,#d1e5b6,#e6eddc)}.orb span{position:absolute;inset:58px;z-index:1;display:grid;place-items:center;font:700 47px var(--serif);color:var(--green)}
+.stats{padding:29px;display:grid;grid-template-columns:1fr 1fr;gap:20px}.stat strong{display:block;font:700 30px var(--serif);letter-spacing:-1px;margin:4px 0}.stat small{color:var(--muted);font-size:11px}.stat-label{font-size:11px;color:#6c796e}.stats .note{grid-column:1/-1;border-top:1px solid var(--line);padding-top:17px;color:var(--muted);font-size:11px;line-height:1.6}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:16px}.section-head h2 span{font:400 12px var(--body);color:var(--muted);margin-left:10px}.search{border:1px solid var(--line);background:#fff;border-radius:6px;display:flex;align-items:center;gap:8px;padding:9px 12px;color:var(--muted)}.search input{width:175px;border:0;outline:0;background:none;font-size:12px;color:var(--ink)}.tools{display:flex;gap:14px;align-items:center}.filters{display:flex;gap:22px;border-bottom:1px solid var(--line)}.filters button{border:0;background:none;padding:0 0 13px;color:var(--muted);font-size:12px}.filters button.active{color:var(--green);border-bottom:2px solid var(--green);font-weight:700}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;text-align:left;min-width:540px}th{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:500;padding:19px 12px 13px}td{padding:19px 12px;border-top:1px solid var(--line);font-size:13px}td:first-child{padding-left:0}.word{font-weight:700;font-size:15px}.word small{display:block;font-size:10px;font-weight:400;color:var(--muted);margin-top:5px}.translation{color:#59665b}.tag{font-size:10px;border:1px solid #d8dfd3;padding:5px 8px;border-radius:4px;color:#6a7966;white-space:nowrap}.due{color:var(--green);font-size:11px}.row-action{border:0;background:none;color:#80917b;padding:5px}.empty{padding:48px 20px;text-align:center}.empty h3{font-family:var(--serif);margin-bottom:10px}.empty p{max-width:380px;margin:0 auto 20px;font-size:13px}
+.bottom-note{margin-top:28px;padding:20px 0;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:20px;font-size:11px;color:var(--muted)}.bottom-note b{color:#586851;font-weight:500}
+.view{display:none}.view.active{display:block;animation:reveal .5s both}.hero{animation:reveal .5s both}.overview{animation:reveal .6s .1s both}@keyframes reveal{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+dialog{border:1px solid var(--line);padding:30px;border-radius:14px;width:min(520px,calc(100% - 30px));color:var(--ink);background:var(--paper);box-shadow:0 24px 90px #233a2933}dialog::backdrop{background:#20332755;backdrop-filter:blur(4px)}.dialog-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}.close{background:none;border:0;font-size:24px;color:var(--muted)}label{display:block;font-size:12px;font-weight:600;margin:18px 0 8px}.field{width:100%;border:1px solid #ccd6c7;border-radius:6px;padding:12px;background:#fff;color:var(--ink)}.hint{font-size:11px;margin-top:8px}.form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:25px}.alignment{background:#e8eedf;padding:14px;border-radius:6px;margin-top:15px}.alignment select{width:auto;padding:5px;margin:5px}.review-area{text-align:center;padding:65px 20px;border-top:1px solid var(--line)}.review-area h3{font:700 38px var(--serif);margin:20px 0}.review-area .answer{font-size:22px;color:var(--green);margin:25px 0}.grades{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}.doc-section{padding:26px 0;border-top:1px solid var(--line);display:grid;grid-template-columns:180px 1fr;gap:25px}.doc-section h3{margin:0;font:700 16px var(--serif)}.doc-section p{margin-bottom:16px}.downloads{display:flex;gap:10px;flex-wrap:wrap}.notice{background:#e5ecda;padding:16px 20px;font-size:12px;line-height:1.8;border-radius:7px;margin-bottom:30px}.toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:var(--ink);color:white;padding:13px 22px;border-radius:8px;font-size:12px;z-index:10;display:none}
+@media(min-width:1400px){main{padding-left:65px;padding-right:65px}}
+@media(max-width:1000px){.app{grid-template-columns:185px 1fr}aside{padding:27px 14px}main{padding:0 26px 25px}.overview{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr;padding:20px}.orb{right:25px}.hero{align-items:flex-start}.hero .primary{margin-top:15px}}
+@media(max-width:650px){.app{display:block}aside{position:static;height:auto;padding:17px 20px;flex-direction:row;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);border-right:0}.brand{font-size:22px}.brand small,.aside-label,.local,nav button .nav-icon,.count{display:none}nav{display:flex;gap:0}nav button{font-size:11px;padding:9px}.brand .logo{width:27px;height:27px;font-size:20px}main{padding:0 20px 20px}.topbar{height:62px}.hero{padding:30px 0;flex-direction:column;gap:5px}.hero .primary{margin-top:8px}h1{letter-spacing:-1px}.review-panel{padding:24px}.orb{right:-64px}.review-content{max-width:240px}.section-head{align-items:flex-start;flex-direction:column}.tools{width:100%}.search{flex:1}.search input{width:100%}.doc-section{grid-template-columns:1fr;gap:12px}.bottom-note{align-items:flex-start;flex-direction:column;gap:10px}.top-actions .quiet{font-size:11px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+<div class="brand"><span class="logo">ℓ</span>lexicon<small>DESKTOP</small></div>
+<div class="aside-label">YOUR WORKSPACE</div>
+<nav aria-label="Main navigation">
+<button class="active" data-view="dictionary"><span class="nav-icon">▤</span> Dictionary</button>
+<button data-view="review"><span class="nav-icon">◷</span> Review <span class="count" id="navDue">0</span></button>
+<button data-view="guide"><span class="nav-icon">⌘</span> App & guide</button>
+</nav>
+<div class="local"><span class="dot"></span>Local-first. Yours forever.<br>Windows & macOS<br><span style="font-size:10px">LEXICON / VERSION 1.0</span></div>
+</aside>
+<main>
+<header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <span id="crumb" style="color:var(--ink)">My dictionary</span></div><div class="top-actions"><button class="quiet" id="exportTop">↗ Export dictionary</button><span class="avatar" aria-label="Personal workspace">L</span></div></header>
+<section class="view active" id="dictionary">
+<div class="hero"><div><div class="eyebrow">A little practice. A lasting vocabulary.</div><h1>Words worth remembering.</h1><p>Your personal dictionary, built one discovery at a time.</p></div><button class="primary" id="addButton">＋ Add a word</button></div>
+<div class="overview">
+<div class="review-panel"><div class="review-content"><span class="pill">SPACED REPETITION</span><h2 id="reviewHeading">Make room for new words.</h2><p id="reviewSummary">Add your first expression. We'll take care of when to revisit it.</p><button class="primary" id="startReview">Start a review <span aria-hidden="true">↗</span></button></div><div class="orb" aria-hidden="true"><span>↻</span></div></div>
+<div class="stats"><div class="stat"><div class="stat-label">Words collected</div><strong id="total">0</strong><small>Your growing vocabulary</small></div><div class="stat"><div class="stat-label">Well remembered</div><strong id="learned">0</strong><small>Intervals of 21+ days</small></div><div class="note"><span class="dot"></span>Small sessions. Stronger memories.<br>Reviews adapt to how well you recall each word.</div></div>
+</div>
+<div class="section-head"><h2>My dictionary <span id="wordCount">0 items</span></h2><div class="tools"><div class="search"><span aria-hidden="true">⌕</span><input id="search" aria-label="Search dictionary" placeholder="Find a word or meaning…"></div><button class="quiet" id="importButton">↓ Import</button></div></div>
+<div class="filters" aria-label="Dictionary filters"><button class="active" data-filter="all">All words</button><button data-filter="due">Due for review</button><button data-filter="learned">Well remembered</button></div>
+<div class="table-wrap"><table><thead><tr><th>Word / expression</th><th>Translation</th><th>Connection</th><th>Next review</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="empty" id="empty"><h3>A blank page. Endless possibilities.</h3><p>Start with a word, a phrase, or an expression you want to make your own.</p><button class="secondary" id="emptyAdd">Add your first word ↗</button></div>
+</section>
+<section class="view" id="review"><div class="hero"><div><div class="eyebrow">Retrieval practice</div><h1>A moment to remember.</h1><p>Recall the meaning before revealing it. An honest rating helps us schedule your next review.</p></div></div><div class="review-area" id="reviewArea"></div></section>
+<section class="view" id="guide"><div class="hero"><div><div class="eyebrow">Made to be yours</div><h1>Your words. Your files.</h1><p>A working browser preview, and a Python desktop app you can take with you.</p></div></div>
+<div class="notice">This page stores your dictionary in this browser. Export a JSON backup to keep it safe. The downloadable Python app reads and writes your own dictionary file directly; it works on Windows and macOS without third-party packages.</div>
+<div class="doc-section"><h3>01 / Get the app</h3><div><p>Download all three files into one folder. Install Python 3.10 or newer, then run <strong>python lexicon.py</strong> (or <strong>python3 lexicon.py</strong> on macOS). The setup dialog asks you to create a blank JSON dictionary or open an existing one.</p><div class="downloads"><button class="primary" id="downloadPython">↓ lexicon.py</button><button class="secondary" id="downloadReadme">↓ README.md</button><button class="secondary" id="downloadBlueprint">↓ BLUEPRINT.md</button></div></div></div>
+<div class="doc-section"><h3>02 / Make connections</h3><div><p><strong>Direct:</strong> a straightforward meaning, such as “look at = bakmak.” <strong>Aligned:</strong> link individual source words to target words with the positioning control. <strong>Expression:</strong> preserve the whole idiom, such as “take someone for granted = birisini çantada keklik görmek.”</p><p>Direct translation is the default. Word counts need not match: the app stores the text as written. Choose aligned mode when word positioning is useful, not when the translation is idiomatic.</p></div></div>
+<div class="doc-section"><h3>03 / Remember for longer</h3><div><p>New entries are due immediately. An SM-2-inspired scheduler uses your recall rating to adjust intervals and ease. Successful reviews progress from 1 day to 6 days, then to increasingly longer intervals. “Again” resets the successful-review streak and brings the item back in 10 minutes.</p><p>Spaced repetition and active recall are research-supported principles, not a guarantee of retention. Review reminders appear while the app is open; there are no background notifications.</p></div></div>
+<div class="doc-section"><h3>04 / Keep a backup</h3><div><p>Export this browser dictionary, then open it in the Python app. Both use the same JSON format, including creation times, word alignment, review history, and scheduling data.</p><button class="secondary" id="backupButton">Export my dictionary ↗</button><button class="quiet" id="newDictionary">Create a new blank dictionary</button></div></div>
+</section>
+<footer class="bottom-note"><span>◎ <b>Learning that lasts, at your own pace.</b></span><span>Private by design · No account needed</span></footer>
+</main></div>
+<dialog id="setup"><div class="dialog-head"><h2>A dictionary of your own.</h2></div><p>Give your blank dictionary a name. We'll download its JSON file and keep a working copy in this browser.</p><form id="setupForm"><label for="dictionaryName">Dictionary name</label><input class="field" id="dictionaryName" required maxlength="80" value="My dictionary"><p class="hint">Keep the downloaded file. The Python desktop app can open it.</p><div class="form-actions"><button class="primary">Create blank dictionary ↗</button></div></form></dialog>
+<dialog id="editor"><div class="dialog-head"><h2>Add a new discovery</h2><button class="close" id="closeEditor" aria-label="Close">×</button></div><form id="entryForm">
+<label for="source">Word or expression</label><input class="field" id="source" required maxlength="500" placeholder="e.g. look for">
+<label for="target">Translation or meaning</label><input class="field" id="target" required maxlength="1000" placeholder="e.g. bir şeyi aramak">
+<label for="mode">Translation connection</label><select class="field" id="mode"><option value="direct">= Direct translation</option><option value="aligned">⇄ Word positioning</option><option value="expression">× Whole expression / idiom</option></select>
+<p class="hint" id="modeHint">One item, one meaning. Words and phrases are both welcome.</p><div class="alignment" id="alignment" hidden></div>
+<div class="form-actions"><button type="button" class="secondary" id="cancelEditor">Cancel</button><button class="primary">Save to dictionary ↗</button></div></form></dialog>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const $=id=>document.getElementById(id);
+let db={version:1,name:"My dictionary",items:[]},filter="all",current=null,shown=false;
+const labels={direct:"Direct",aligned:"Word positioning",expression:"Expression"};
+function notice(text){$("toast").textContent=text;$("toast").style.display="block";clearTimeout(notice.timer);notice.timer=setTimeout(()=>$("toast").style.display="none",3500)}
+function download(name,text,type="text/plain"){const url=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function exportDb(){download(db.name.replace(/[^\w -]/g,"")+".json",JSON.stringify(db,null,2),"application/json")}
+function persist(){try{localStorage.setItem("lexicon-v1",JSON.stringify(db))}catch(e){notice("Browser storage unavailable. Export a backup before leaving.")}render()}
+function dueItems(){return db.items.filter(x=>x.due<=Date.now()).sort((a,b)=>a.due-b.due)}
+function render(){
+ const due=dueItems().length;$("total").textContent=db.items.length;$("learned").textContent=db.items.filter(x=>x.interval>=21).length;$("wordCount").textContent=db.items.length+" items";$("navDue").textContent=due;
+ $("reviewHeading").textContent=due?`${due} ${due===1?"word is":"words are"} ready for you.`:db.items.length?"You're all caught up.":"Make room for new words.";
+ $("reviewSummary").textContent=due?"A little recall today makes tomorrow's words feel familiar.":db.items.length?"Come back when your next review is due. Or discover something new.":"Add your first expression. We'll take care of when to revisit it.";
+ $("crumb").textContent=db.name;
+ const query=$("search").value.toLowerCase(),items=db.items.filter(x=>(x.source+" "+x.target).toLowerCase().includes(query)&&(filter==="all"||filter==="due"&&x.due<=Date.now()||filter==="learned"&&x.interval>=21));
+ $("rows").replaceChildren();$("empty").hidden=items.length>0;
+ if(!items.length){$("empty").querySelector("h3").textContent=db.items.length?"No matching words.":"A blank page. Endless possibilities."}
+ items.slice().reverse().forEach(x=>{const tr=document.createElement("tr");const word=document.createElement("td"),title=document.createElement("div"),date=document.createElement("small");title.className="word";title.textContent=x.source;date.textContent="Added "+new Date(x.created).toLocaleDateString(undefined,{month:"short",day:"numeric"});title.append(date);word.append(title);tr.append(word);
+ const translation=document.createElement("td");translation.className="translation";translation.textContent=x.target;tr.append(translation);
+ const mode=document.createElement("td"),tag=document.createElement("span");tag.className="tag";tag.textContent=labels[x.mode];mode.append(tag);tr.append(mode);
+ const due=document.createElement("td");due.className="due";due.textContent=x.due<=Date.now()?"● Ready now":new Date(x.due).toLocaleDateString(undefined,{month:"short",day:"numeric"});tr.append(due);
+ const action=document.createElement("td"),button=document.createElement("button");button.className="row-action";button.textContent="×";button.setAttribute("aria-label","Delete "+x.source);button.onclick=()=>{if(confirm('Delete "'+x.source+'"?')){db.items=db.items.filter(i=>i.id!==x.id);persist()}};action.append(button);tr.append(action);$("rows").append(tr)});
+}
+function view(name){document.querySelectorAll(".view").forEach(x=>x.classList.toggle("active",x.id===name));document.querySelectorAll("[data-view]").forEach(x=>x.classList.toggle("active",x.dataset.view===name));if(name==="review")loadReview()}
+document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>view(b.dataset.view));
+document.querySelectorAll("[data-filter]").forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll("[data-filter]").forEach(x=>x.classList.toggle("active",x===b));render()});
+$("search").oninput=render;
+function openEditor(){$("entryForm").reset();alignment();$("editor").showModal()}
+$("addButton").onclick=$("emptyAdd").onclick=openEditor;
+$("closeEditor").onclick=$("cancelEditor").onclick=()=>$("editor").close();
+function alignment(){
+ const mode=$("mode").value;$("alignment").hidden=mode!=="aligned";$("modeHint").textContent=mode==="expression"?"Keep the idiom intact; its meaning isn't a word-for-word equation.":mode==="aligned"?"Connect each source word to a target position. Multiple words can share a target.":"One item, one meaning. Words and phrases are both welcome.";
+ $("alignment").replaceChildren();if(mode!=="aligned")return;
+ const source=$("source").value.trim().split(/\s+/).filter(Boolean),target=$("target").value.trim().split(/\s+/).filter(Boolean);
+ source.forEach((word,i)=>{const row=document.createElement("div");row.append(document.createTextNode(word+" → "));const select=document.createElement("select");select.dataset.index=i;select.setAttribute("aria-label","Target position for "+word);const blank=document.createElement("option");blank.value="-1";blank.textContent="No direct match";select.append(blank);target.forEach((t,j)=>{const option=document.createElement("option");option.value=j;option.textContent=(j+1)+". "+t;select.append(option)});select.value=i<target.length?i:-1;row.append(select);$("alignment").append(row)});
+}
+$("mode").onchange=$("source").oninput=$("target").oninput=alignment;
+$("entryForm").onsubmit=e=>{e.preventDefault();const source=$("source").value.trim(),target=$("target").value.trim();if(!source||!target)return;const now=Date.now();db.items.push({id:crypto.randomUUID?crypto.randomUUID():String(now)+Math.random(),source,target,mode:$("mode").value,alignment:[...$("alignment").querySelectorAll("select")].map(s=>Number(s.value)),created:now,due:now,interval:0,ease:2.5,repetitions:0,history:[]});persist();$("editor").close();notice("Word saved. Your first review is ready.")};
+$("setupForm").onsubmit=e=>{e.preventDefault();const name=$("dictionaryName").value.trim();if(!name)return;db={version:1,name,items:[]};persist();exportDb();$("setup").close()};
+$("newDictionary").onclick=()=>{if(confirm("Export your current dictionary before replacing it. Create a new blank dictionary?")){$("setup").showModal()}};
+$("exportTop").onclick=$("backupButton").onclick=exportDb;
+$("importButton").onclick=()=>$("importFile").click();
+function validate(data){if(data.version!==1||typeof data.name!=="string"||!Array.isArray(data.items))throw Error();for(const x of data.items){if(typeof x.id!=="string"||typeof x.source!=="string"||typeof x.target!=="string"||!labels[x.mode]||!Array.isArray(x.alignment)||!Array.isArray(x.history)||!["created","due","interval","ease","repetitions"].every(k=>Number.isFinite(x[k]))||x.interval<0||x.ease<1.3)throw Error()}return data}
+$("importFile").onchange=async e=>{try{const file=e.target.files[0];if(!file)return;const imported=validate(JSON.parse(await file.text()));if(db.items.length&&!confirm("Replace this browser dictionary? Export a backup first."))return;db=imported;persist();notice("Dictionary imported.")}catch(e){notice("Invalid dictionary. Choose a Lexicon version 1 JSON file.")}finally{$("importFile").value=""}};
+$("startReview").onclick=()=>view("review");
+function loadReview(){current=dueItems()[0];shown=false;const area=$("reviewArea");area.replaceChildren();if(!current){const h=document.createElement("h3");h.textContent="A little pause, well earned.";area.append(h);const p=document.createElement("p");p.textContent="No words are due right now. Your next session will appear here.";area.append(p);return}
+ const p=document.createElement("p");p.textContent=dueItems().length+" remaining · Recall the translation";const h=document.createElement("h3");h.textContent=current.source;const b=document.createElement("button");b.className="primary";b.textContent="Reveal meaning";b.onclick=()=>{if(shown)return;shown=true;b.remove();const answer=document.createElement("div");answer.className="answer";answer.textContent=current.target;area.append(answer);
+ if(current.mode==="aligned"){const mapped=document.createElement("p"),s=current.source.split(/\s+/),t=current.target.split(/\s+/);mapped.textContent=current.alignment.map((j,i)=>s[i]+" → "+(j>=0?t[j]:"—")).join(" · ");area.append(mapped)}
+ const grades=document.createElement("div");grades.className="grades";[["Again",1],["Hard",3],["Good",4],["Easy",5]].forEach(([label,q])=>{const g=document.createElement("button");g.className="secondary";g.textContent=label;g.onclick=()=>rate(q);grades.append(g)});area.append(grades)};area.append(p,h,b)}
+function rate(q){const x=current,now=Date.now();x.ease=Math.max(1.3,x.ease+.1-(5-q)*(.08+(5-q)*.02));if(q<3){x.repetitions=0;x.interval=0;x.due=now+600000}else{x.interval=x.repetitions===0?1:x.repetitions===1?6:Math.max(1,Math.round(x.interval*x.ease));x.repetitions++;x.due=now+x.interval*86400000}x.history.push({at:now,quality:q,interval:x.interval});persist();loadReview()}
+try{const saved=localStorage.getItem("lexicon-v1");if(saved)db=validate(JSON.parse(saved));else $("setup").showModal()}catch(e){notice("Could not load browser data. Import a backup or create a dictionary.");$("setup").showModal()}render();setInterval(render,60000);
+
+const python=String.raw`"""Lexicon: local-first vocabulary with SM-2-inspired reviews. Python 3.10+."""
+import json
+import math
+import os
+import time
+import uuid
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
+from datetime import datetime
+from pathlib import Path
+
+MODES = ("direct", "aligned", "expression")
+def now():
+    return int(time.time() * 1000)
+
+def validate(data):
+    if data.get("version") != 1 or not isinstance(data.get("name"), str) or not isinstance(data.get("items"), list):
+        raise ValueError("Not a Lexicon version 1 dictionary.")
+    for x in data["items"]:
+        for k in ("id", "source", "target"):
+            if not isinstance(x.get(k), str):
+                raise ValueError("Invalid entry text.")
+        if x.get("mode") not in MODES:
+            raise ValueError("Invalid translation mode.")
+        if not isinstance(x.get("alignment"), list) or not isinstance(x.get("history"), list):
+            raise ValueError("Invalid alignment or history.")
+        for k in ("created", "due", "interval", "ease", "repetitions"):
+            v = x.get(k)
+            if not isinstance(v, (int, float)) or not math.isfinite(v):
+                raise ValueError("Invalid schedule.")
+        if x["interval"] < 0 or x["ease"] < 1.3:
+            raise ValueError("Invalid interval or ease.")
+        targets = x["target"].split()
+        for j in x["alignment"]:
+            if not isinstance(j, int) or j < -1 or j >= len(targets):
+                raise ValueError("Invalid word position.")
+    return data
+
+def schedule(item, quality):
+    item["ease"] = max(1.3, item["ease"] + .1 - (5-quality)*(.08+(5-quality)*.02))
+    if quality < 3:
+        item["repetitions"] = 0
+        item["interval"] = 0
+        item["due"] = now() + 600000
+    else:
+        r = item["repetitions"]
+        item["interval"] = 1 if r == 0 else 6 if r == 1 else max(1, int(item["interval"] * item["ease"] + .5))
+        item["repetitions"] += 1
+        item["due"] = now() + item["interval"] * 86400000
+    item["history"].append({"at": now(), "quality": quality, "interval": item["interval"]})
+
+class Lexicon:
+    def __init__(self, root):
+        self.root = root
+        root.title("Lexicon • Your personal dictionary")
+        root.geometry("980x650")
+        root.minsize(700, 460)
+        root.configure(bg="#f6f5ef")
+        self.path = None
+        self.data = {"version": 1, "name": "My dictionary", "items": []}
+        style = ttk.Style()
+        style.theme_use("clam")
+        style.configure("TFrame", background="#f6f5ef")
+        style.configure("TLabel", background="#f6f5ef", foreground="#25352e")
+        style.configure("TButton", padding=9)
+        style.configure("Treeview", rowheight=34)
+        wrap = ttk.Frame(root, padding=24)
+        wrap.pack(fill="both", expand=True)
+        ttk.Label(wrap, text="Words worth remembering.", font=("Helvetica", 25, "bold")).pack(anchor="w")
+        self.status = ttk.Label(wrap, text="Create or open a dictionary to get started.")
+        self.status.pack(anchor="w", pady=(8, 18))
+        bar = ttk.Frame(wrap)
+        bar.pack(fill="x")
+        for text, command in (("New dictionary", self.new), ("Open", self.open), ("Add word", self.add), ("Review due", self.review), ("Delete selected", self.delete)):
+            ttk.Button(bar, text=text, command=command).pack(side="left", padx=(0, 8))
+        self.search = tk.StringVar()
+        search = ttk.Entry(wrap, textvariable=self.search)
+        search.pack(fill="x", pady=15)
+        self.search.trace_add("write", lambda *_: self.refresh())
+        table = ttk.Frame(wrap)
+        table.pack(fill="both", expand=True)
+        self.tree = ttk.Treeview(table, columns=("source", "target", "mode", "due"), show="headings")
+        for key, title in (("source", "Word / expression"), ("target", "Translation"), ("mode", "Connection"), ("due", "Next review")):
+            self.tree.heading(key, text=title)
+            self.tree.column(key, width=200 if key in ("source", "target") else 130)
+        scroll = ttk.Scrollbar(table, orient="vertical", command=self.tree.yview)
+        self.tree.configure(yscrollcommand=scroll.set)
+        self.tree.pack(side="left", fill="both", expand=True)
+        scroll.pack(side="right", fill="y")
+        root.after(200, self.setup)
+        root.after(60000, self.tick)
+
+    def setup(self):
+        choice = messagebox.askyesnocancel("Your dictionary", "Create your own blank dictionary file?\n\nYes: create a file\nNo: open an existing file\nCancel: choose later")
+        if choice is True:
+            self.new()
+        elif choice is False:
+            self.open()
+
+    def write(self):
+        if not self.path:
+            return False
+        temp = self.path.with_name(self.path.name + ".tmp")
+        try:
+            temp.write_text(json.dumps(self.data, ensure_ascii=False, indent=2), encoding="utf-8")
+            os.replace(temp, self.path)
+            return True
+        except OSError as exc:
+            messagebox.showerror("Could not save", str(exc) + "\nYour changes remain in memory. Check file permissions and disk space.")
+            return False
+
+    def new(self):
+        if self.path and not messagebox.askyesno("New dictionary", "Switch to a new blank dictionary? Your current file will not be changed."):
+            return
+        p = filedialog.asksaveasfilename(title="Create your blank dictionary", defaultextension=".json", filetypes=[("Lexicon dictionary", "*.json")])
+        if not p:
+            return
+        old_path, old_data = self.path, self.data
+        self.path = Path(p)
+        self.data = {"version": 1, "name": self.path.stem, "items": []}
+        if not self.write():
+            self.path, self.data = old_path, old_data
+        self.refresh()
+
+    def open(self):
+        p = filedialog.askopenfilename(filetypes=[("Lexicon dictionary", "*.json")])
+        if not p:
+            return
+        try:
+            data = validate(json.loads(Path(p).read_text(encoding="utf-8")))
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            messagebox.showerror("Could not open dictionary", str(exc))
+            return
+        self.path, self.data = Path(p), data
+        self.refresh()
+
+    def tick(self):
+        self.refresh()
+        self.root.after(60000, self.tick)
+
+    def refresh(self):
+        self.tree.delete(*self.tree.get_children())
+        query = self.search.get().casefold()
+        for x in reversed(self.data["items"]):
+            if query not in (x["source"] + " " + x["target"]).casefold():
+                continue
+            due = "Ready now" if x["due"] <= now() else datetime.fromtimestamp(x["due"]/1000).strftime("%b %d, %Y")
+            self.tree.insert("", "end", iid=x["id"], values=(x["source"], x["target"], x["mode"], due))
+        n = sum(x["due"] <= now() for x in self.data["items"])
+        self.status.config(text=f'{self.data["name"]} • {len(self.data["items"])} words • {n} due for review' if self.path else "Create or open a dictionary to get started.")
+
+    def add(self):
+        if not self.path:
+            messagebox.showinfo("Setup first", "Create or open a dictionary file first.")
+            return
+        win = tk.Toplevel(self.root)
+        win.title("Add a discovery")
+        win.transient(self.root)
+        win.grab_set()
+        form = ttk.Frame(win, padding=24)
+        form.pack(fill="both", expand=True)
+        source, target, mode = tk.StringVar(), tk.StringVar(), tk.StringVar(value="direct")
+        for label, variable in (("Word or expression", source), ("Translation", target)):
+            ttk.Label(form, text=label).pack(anchor="w", pady=(12, 5))
+            ttk.Entry(form, textvariable=variable, width=55).pack(fill="x")
+        ttk.Label(form, text="Translation connection").pack(anchor="w", pady=(12, 5))
+        pick = ttk.Combobox(form, textvariable=mode, values=MODES, state="readonly")
+        pick.pack(fill="x")
+        align = ttk.Frame(form)
+        align.pack(fill="x", pady=12)
+        mappings = []
+        def positions(*_):
+            for child in align.winfo_children():
+                child.destroy()
+            mappings.clear()
+            if mode.get() != "aligned":
+                return
+            targets = target.get().split()
+            options = ["No direct match"] + [f"{j+1}: {w}" for j, w in enumerate(targets)]
+            for i, word in enumerate(source.get().split()):
+                row = ttk.Frame(align)
+                row.pack(fill="x", pady=2)
+                ttk.Label(row, text=word + " → ", width=20).pack(side="left")
+                combo = ttk.Combobox(row, values=options, state="readonly")
+                combo.current(i+1 if i < len(targets) else 0)
+                combo.pack(side="left")
+                mappings.append(combo)
+        for variable in (source, target, mode):
+            variable.trace_add("write", positions)
+        ttk.Label(form, text="Direct = meaning · Aligned = word positions · Expression = whole idiom", wraplength=430).pack(anchor="w")
+        def save():
+            s, t = source.get().strip(), target.get().strip()
+            if not s or not t:
+                messagebox.showwarning("Missing text", "Enter both the word and its translation.", parent=win)
+                return
+            timestamp = now()
+            item = {"id": str(uuid.uuid4()), "source": s, "target": t, "mode": mode.get(),
+                    "alignment": [c.current()-1 for c in mappings], "created": timestamp,
+                    "due": timestamp, "interval": 0, "ease": 2.5, "repetitions": 0, "history": []}
+            self.data["items"].append(item)
+            if self.write():
+                win.destroy()
+            else:
+                self.data["items"].remove(item)
+            self.refresh()
+        ttk.Button(form, text="Save to dictionary", command=save).pack(anchor="e", pady=15)
+
+    def delete(self):
+        selected = set(self.tree.selection())
+        if not selected or not messagebox.askyesno("Delete words", "Permanently delete selected entries?"):
+            return
+        old = self.data["items"]
+        self.data["items"] = [x for x in old if x["id"] not in selected]
+        if not self.write():
+            self.data["items"] = old
+        self.refresh()
+
+    def review(self):
+        due = sorted((x for x in self.data["items"] if x["due"] <= now()), key=lambda x: x["due"])
+        if not due:
+            messagebox.showinfo("All caught up", "No words are due right now.")
+            return
+        win = tk.Toplevel(self.root)
+        win.title("Retrieval practice")
+        win.geometry("620x380")
+        win.transient(self.root)
+        win.grab_set()
+        frame = ttk.Frame(win, padding=30)
+        frame.pack(fill="both", expand=True)
+        def next_item():
+            for child in frame.winfo_children():
+                child.destroy()
+            if not due:
+                ttk.Label(frame, text="Session complete. Well done!").pack(pady=40)
+                ttk.Button(frame, text="Close", command=win.destroy).pack()
+                return
+            x = due[0]
+            ttk.Label(frame, text=f"{len(due)} remaining · Recall the translation").pack()
+            ttk.Label(frame, text=x["source"], font=("Helvetica", 22, "bold"), wraplength=540).pack(pady=25)
+            def reveal():
+                reveal_button.destroy()
+                ttk.Label(frame, text=x["target"], font=("Helvetica", 17), wraplength=540).pack(pady=12)
+                if x["mode"] == "aligned":
+                    s, t = x["source"].split(), x["target"].split()
+                    text = " · ".join(f'{s[i]} → {t[j] if j >= 0 else "—"}' for i, j in enumerate(x["alignment"]) if i < len(s))
+                    ttk.Label(frame, text=text, wraplength=540).pack()
+                row = ttk.Frame(frame)
+                row.pack(pady=15)
+                def rate(q):
+                    old = json.loads(json.dumps(x))
+                    schedule(x, q)
+                    if self.write():
+                        due.pop(0)
+                        self.refresh()
+                        next_item()
+                    else:
+                        x.clear()
+                        x.update(old)
+                for label, q in (("Again", 1), ("Hard", 3), ("Good", 4), ("Easy", 5)):
+                    ttk.Button(row, text=label, command=lambda q=q: rate(q)).pack(side="left", padx=5)
+            reveal_button = ttk.Button(frame, text="Reveal meaning", command=reveal)
+            reveal_button.pack()
+        next_item()
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    Lexicon(root)
+    root.mainloop()
+`;
+const readme=String.raw`# Lexicon
+A local-first Python vocabulary dictionary for Windows and macOS.
+
+## Files
+- lexicon.py: runnable desktop application.
+- README.md: installation and mechanics.
+- BLUEPRINT.md: architecture and coding plan.
+- Your chosen .json file: your dictionary, schedule and review history.
+
+## Installation
+1. Install Python 3.10+ from https://www.python.org/downloads/.
+   Windows: enable "Add Python to PATH" during installation.
+   macOS: the official installer includes Tcl/Tk; avoid relying on system Python.
+2. Place lexicon.py in a writable folder.
+3. In a terminal in that folder, run:
+   Windows: python lexicon.py
+   macOS: python3 lexicon.py
+4. At setup choose Yes and select a name/location for your blank JSON dictionary,
+   or No to open an existing Lexicon JSON file.
+No pip dependencies are needed. Verify Tk with python -m tkinter
+(or python3 -m tkinter). If that fails, install a Python distribution with Tk support.
+
+## Everyday use
+Add a source item and a translation. Direct translation is selected by default.
+- direct: one source item maps to one meaning; phrases and unequal token counts
+  are allowed. Example: look at = bakmak.
+- aligned: match each source token to a target token using dropdowns.
+  Several source tokens may map to one target; "No direct match" is allowed.
+  Edit the text before assigning positions: editing rebuilds alignment controls.
+- expression: preserve an idiom as a whole, without pretending its components
+  translate independently. Example: take someone for granted =
+  birisini çantada keklik görmek.
+
+These are semantic connection types, not three different dictionaries.
+Tokenization uses whitespace; punctuation stays attached to its word.
+Word count rules in the original brief were ambiguous: direct translation does
+not enforce equal counts, which would reject its own "look at = bakmak" example.
+Aligned mode makes word positioning explicit instead.
+
+## Review mechanics
+Creation times and every review are recorded as Unix milliseconds.
+New entries are due immediately. Open "Review due", recall the translation,
+reveal it, then honestly select Again (quality 1), Hard (3), Good (4), or Easy (5).
+The scheduler is inspired by SM-2:
+ease = max(1.3, ease + 0.1 - (5-q)*(0.08 + (5-q)*0.02)).
+Failure resets successful repetitions and schedules a retry in 10 minutes.
+Success schedules 1 day, then 6 days, then previous interval multiplied by ease.
+Ratings affect ease, including during the initial fixed intervals.
+Intervals use elapsed 24-hour days, not local calendar midnights.
+This uses spaced repetition and retrieval practice, but is not a clinical or
+scientifically validated implementation of a specific learning protocol.
+The review itself is a self-assessed test; no separate exam or automated
+translation grading is implemented. Longer-term tests happen as items become due.
+The app refreshes its due count every minute while open.
+It does not run in the background or issue operating-system notifications.
+
+## Data and privacy
+No accounts, network requests, or remote storage in the Python app.
+Every successful addition/deletion/review is saved to your selected JSON file.
+Writes use a temporary sibling file and atomic replacement.
+Do not open the same dictionary simultaneously in multiple app instances.
+Back up the JSON file regularly. Deletion has confirmation but no undo.
+The browser preview uses localStorage; export its JSON and open it in Python.
+Browser storage is not the downloaded file and may be cleared by the browser.
+Google Fonts are loaded by the preview page, not by the Python app.
+
+## Limitations
+Tk provides native-style controls, not the browser preview's exact appearance.
+No audio, automatic translations, background notifications, separate exam engine,
+file locking, encryption or automatic backups. Editing existing entries is not
+implemented; delete/re-add only if resetting its review history is acceptable.
+A frozen executable is not included; Python must be installed.
+`;
+const blueprint=String.raw`# Lexicon — implementation blueprint
+
+## 1. Scope and decisions
+Deliver a runnable, dependency-free Python 3.10+ Tkinter app for Windows/macOS.
+Persist vocabulary in a user-created JSON file rather than an opaque database.
+Support direct, aligned and whole-expression translation.
+Use self-assessed retrieval practice with an SM-2-inspired schedule.
+Treat "one word" as one vocabulary item, which may contain several tokens.
+Keep alignment optional and explicit; do not infer linguistically incorrect links.
+
+## 2. Data model
+Dictionary: {version:1, name:string, items:[Entry]}.
+Entry:
+- id: UUID string
+- source, target: original text
+- mode: direct | aligned | expression
+- alignment: target token indexes for source tokens; -1 = unmatched
+- created, due: Unix timestamp in milliseconds
+- interval: elapsed days; 0 for new/failed items
+- ease: numeric factor, starts at 2.5, floor 1.3
+- repetitions: successful review streak
+- history: [{at, quality, interval}]
+Whitespace tokenization deliberately avoids language-specific assumptions.
+Production expansion should use a formal schema, duplicate-ID detection, input
+size limits and migrations before accepting untrusted dictionary files.
+
+## 3. Modules in the supplied single-file implementation
+validate: checks imported dictionaries and required schedule fields.
+schedule: modifies one entry from a recall quality, appends history.
+Lexicon: GUI controller, file ownership, editor, table and review session.
+write: UTF-8 JSON to sibling .tmp file, os.replace into selected file.
+now: common millisecond clock.
+For a larger codebase split these into model.py, storage.py, scheduler.py,
+ui/editor.py, ui/review.py and app.py.
+
+## 4. Coding sequence
+A. Establish Tk root, shared style and initial setup dialog.
+B. Implement new/open operations and atomic persistence.
+C. Add sortable-by-insertion vocabulary display, search, delete confirmation.
+D. Build direct/expression editor and dynamic word-position selectors.
+E. Implement scheduler as a pure function where practical.
+F. Build a reveal-then-rate review session over a snapshot of due entries.
+G. Refresh due count every 60 seconds with Tk.after.
+H. Interoperate with browser-exported version 1 JSON files.
+I. Test both OS platforms and disk-failure paths.
+
+## 5. Review state machine
+Ready -> show source -> reveal target/alignment -> rating -> persist -> next.
+Closing before rating leaves an entry unchanged.
+Failed items return after 10 minutes, not immediately within the session snapshot.
+A failed save restores the pre-rating in-memory entry.
+No automated grading: paraphrases and idioms make exact matching misleading.
+
+## 6. Manual acceptance tests
+- First run can create an empty file and reopen it.
+- Cancel setup leaves a usable window; Add asks for setup.
+- Unicode Turkish vocabulary survives save/open without corruption.
+- Blank source/target is rejected.
+- Direct handles "look at = bakmak" without equal-token constraints.
+- Aligned permits nonsequential positioning, repeated target indexes and -1.
+- Expression retains idiom text verbatim.
+- New entries are immediately due.
+- Good gives 1 day, then 6 days; Again gives 10 minutes.
+- Ease never falls below 1.3.
+- Review history contains every committed rating.
+- Search matches source or target; delete needs confirmation.
+- Invalid files do not replace the active dictionary.
+- Write failure is reported; additions/deletions/reviews roll back.
+- Browser export opens in Python and Python JSON imports in browser.
+- Due count updates while open.
+
+## 7. Recommended next iteration
+Add automated unittest coverage with an injected clock; entry editing that
+preserves history; alignment schema validation in both clients; file locking;
+dated rotating backups; keyboard review shortcuts; screen-reader testing;
+calendar review view; an optional separate delayed assessment mode.
+For genuine OS reminders, add platform-specific notification integration and a
+clearly consented background agent. Do not claim reminders work when closed
+until that feature is implemented.
+Package using PyInstaller only after platform-specific testing; sign Windows
+binaries and notarize macOS builds. These are not included in this prototype.
+`;
+$("downloadPython").onclick=()=>download("lexicon.py",python);
+$("downloadReadme").onclick=()=>download("README.md",readme);
+$("downloadBlueprint").onclick=()=>download("BLUEPRINT.md",blueprint);
+</script>
+</body>
+</html>
